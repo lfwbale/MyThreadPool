@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class CustomThreadPool{
     public static void main(String[] args) {
-        ThreadPool threadPool = new ThreadPool(1, 1000, TimeUnit.MILLISECONDS,1,
+        ThreadPool threadPool = new ThreadPool(2, 5,1000, TimeUnit.MILLISECONDS,10,
                 (queue,task)->{
 
             //死等
@@ -22,9 +22,9 @@ public class CustomThreadPool{
             //排队线程太多 放弃了
             //System.out.println("排队线程太多 放弃了... " + task);
                 });
-        for(int i = 1; i <= 3;i ++){
+        for(int i = 1; i <= 20;i ++){
             int j = i;
-            if(j == 4) {
+            if(j % 4 == 0) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -64,7 +64,7 @@ class ThreadPool{
     private int coreSize;
 
     // 最大线程数
-    //private int maxSize;
+    private int maxSize;
 
     // 获取任务时的超时时间
     private long timeout;
@@ -73,10 +73,10 @@ class ThreadPool{
 
     private RejectPolicy<Runnable> rejectPolicy;
 
-    public ThreadPool(int coreSize, long timeout, TimeUnit timeUnit,
+    public ThreadPool(int coreSize, int maxSize, long timeout, TimeUnit timeUnit,
                       int queueCapcity, RejectPolicy<Runnable> rejectPolicy) {
         this.coreSize = coreSize;
-        //this.maxSize = maxSize;
+        this.maxSize = maxSize;
         this.timeout = timeout;
         this.timeUnit = timeUnit;
         this.taskQueue = new BlockQueue<>(queueCapcity);
@@ -92,15 +92,15 @@ class ThreadPool{
                 System.out.println("新增 worker: " + worker + ", " + task);
                 workers.add(worker);
                 worker.start();
-                /*
+
             } else if(workers.size() < maxSize) {
                 // 启动临时线程
                 Worker worker = new Worker(task);
-                System.out.println("新增 worker启动： " + worker + "," + task);
+                System.out.println("新增 临时worker启动： " + worker + "," + task);
                 workers.add(worker);
                 worker.start();
 
-                 */
+
             } else {
                 // 1) 死等
                 // 2) 带超时等待
@@ -148,6 +148,7 @@ class ThreadPool{
                     task = null;
                 }
             }
+
 
             synchronized (workers) {
                 System.out.println("worker: " + this +"已被移除");
