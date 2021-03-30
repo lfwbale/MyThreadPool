@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class CustomThreadPool{
     public static void main(String[] args) {
-        ThreadPool threadPool = new ThreadPool(2, 5,1000, TimeUnit.MILLISECONDS,10,
+        ThreadPool threadPool = new ThreadPool(3, 5,2000, TimeUnit.MILLISECONDS,10,
                 (queue,task)->{
 
             //死等
@@ -22,7 +22,7 @@ public class CustomThreadPool{
             //排队线程太多 放弃了
             //System.out.println("排队线程太多 放弃了... " + task);
                 });
-        for(int i = 1; i <= 20;i ++){
+        for(int i = 1; i <= 30;i ++){
             int j = i;
             if(j % 4 == 0) {
                 try {
@@ -93,7 +93,7 @@ class ThreadPool{
                 workers.add(worker);
                 worker.start();
 
-            } else if(workers.size() < maxSize) {
+            } else if(workers.size() < maxSize && taskQueue.size() == taskQueue.capicity) {
                 // 启动临时线程
                 Worker worker = new Worker(task);
                 System.out.println("新增 临时worker启动： " + worker + "," + task);
@@ -161,6 +161,7 @@ class ThreadPool{
 
 //阻塞队列
 class BlockQueue<T> {
+    public int capicity;
     // 1. 任务队列
     private Deque<T> queue = new ArrayDeque<>();
 
